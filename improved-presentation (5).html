@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Score Prediction - AI Project</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --secondary: #8b5cf6;
+            --accent: #3b82f6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --light: #f8fafc;
+            --white: #ffffff;
+            --gray: #64748b;
+            --dark: #1e293b;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--light);
+            color: var(--dark);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* Background Pattern */
+        .bg-pattern {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            opacity: 0.03;
+            background-image: 
+                radial-gradient(circle at 20% 50%, var(--primary) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, var(--secondary) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, var(--accent) 0%, transparent 50%);
+        }
+
+        /* Container */
+        .presentation-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Slides */
+        .slide {
+            display: none;
+            flex: 1;
+            padding: 60px 40px;
+            align-items: center;
+            justify-content: center;
+            min-height: calc(100vh - 100px);
+            position: relative;
+            overflow-y: auto;
+        }
+
+        .slide.active {
+            display: flex;
+            animation: slideIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Navigation */
+        .navigation {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 -2px 20px var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 60px;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: var(--white);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(99, 102, 241, 0.4);
+        }
+
+        .nav-btn:active {
+            transform: scale(0.95);
+        }
+
+        .slide-counter {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .slide-number {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .slide-dots {
+            display: flex;
+            gap: 10px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--gray);
+            opacity: 0.3;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+        }
+
+        .dot.active {
+            background: var(--primary);
+            opacity: 1;
+            transform: scale(1.3);
+        }
+
+        .dot:hover {
+            opacity: 0.6;
+            transform: scale(1.2);
+        }
+
+        /* Logo */
+        .logo-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
+        }
+
+        .logo-img {
+            height: 45px;
+            width: auto;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+            transition: all 0.3s ease;
+        }
+
+        .logo-img:hover {
+            transform: scale(1.05);
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+        }
+
+        /* Title Slide */
+        .title-slide {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .main-title {
+            font-size: 4rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 18px;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .subtitle {
+            font-size: 1.6rem;
+            color: var(--gray);
+            margin-bottom: 35px;
+            animation: fadeInUp 0.8s ease 0.2s backwards;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 12px 30px;
+            background: var(--white);
+            border: 2px solid var(--primary);
+            border-radius: 50px;
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 1rem;
+            box-shadow: 0 10px 30px var(--shadow);
+            animation: fadeInUp 0.8s ease 0.4s backwards;
+            transition: all 0.3s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Content Slides */
+        .content-slide {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .content-slide.single {
+            grid-template-columns: 1fr;
+            text-align: center;
+            max-width: 1200px;
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            color: var(--dark);
+        }
+
+        h3 {
+            font-size: 1.6rem;
+            color: var(--primary);
+            margin-bottom: 18px;
+        }
+
+        p {
+            font-size: 1.2rem;
+            line-height: 1.7;
+            color: var(--gray);
+            margin-bottom: 20px;
+        }
+
+        /* Floating Shapes */
+        .floating-shapes {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.1;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .shape:nth-child(1) {
+            width: 250px;
+            height: 250px;
+            background: var(--primary);
+            top: -125px;
+            left: -125px;
+            animation-duration: 25s;
+        }
+
+        .shape:nth-child(2) {
+            width: 180px;
+            height: 180px;
+            background: var(--secondary);
+            top: 50%;
+            right: -90px;
+            animation-duration: 30s;
+            animation-delay: 5s;
+        }
+
+        .shape:nth-child(3) {
+            width: 120px;
+            height: 120px;
+            background: var(--accent);
+            bottom: -60px;
+            left: 30%;
+            animation-duration: 22s;
+            animation-delay: 10s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(30px, -20px) rotate(90deg); }
+            50% { transform: translate(-20px, 30px) rotate(180deg); }
+            75% { transform: translate(20px, 20px) rotate(270deg); }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 60px var(--shadow);
+        }
+
+        /* Feature Grid */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            margin-top: 35px;
+        }
+
+        .feature-card {
+            background: var(--white);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .feature-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px var(--shadow);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+        }
+
+        .feature-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--dark);
+        }
+
+        .feature-desc {
+            color: var(--gray);
+            font-size: 0.95rem;
+        }
+
+        /* Metrics */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 25px;
+            margin: 40px 0;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: var(--white);
+            padding: 35px 20px;
+            border-radius: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 20px 50px rgba(99, 102, 241, 0.3);
+        }
+
+        .metric-value {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .metric-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        /* Bar Chart */
+        .chart-container {
+            background: var(--white);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px var(--shadow);
+        }
+
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            height: 250px;
+            gap: 25px;
+            margin-top: 25px;
+        }
+
+        .bar {
+            flex: 1;
+            background: linear-gradient(to top, var(--primary), var(--accent));
+            border-radius: 10px 10px 0 0;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .bar:hover {
+            transform: translateY(-10px);
+            filter: brightness(1.1);
+            box-shadow: 0 10px 30px var(--shadow);
+        }
+
+        .bar-label {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: 600;
+            color: var(--dark);
+            white-space: nowrap;
+            font-size: 0.9rem;
+        }
+
+        .bar-value {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--primary);
+        }
+
+        /* Key Points */
+        .key-points {
+            margin: 25px 0;
+        }
+
+        .key-point {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+            border-left: 4px solid var(--primary);
+            padding: 18px 25px;
+            margin: 15px 0;
+            border-radius: 10px;
+            font-size: 1.05rem;
+            transition: all 0.3s ease;
+        }
+
+        .key-point:hover {
+            transform: translateX(10px);
+            box-shadow: 0 5px 20px var(--shadow);
+        }
+
+        /* Code Block */
+        .code-block {
+            background: var(--dark);
+            color: var(--light);
+            padding: 20px 25px;
+            border-radius: 15px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.95rem;
+            overflow-x: auto;
+            box-shadow: 0 10px 40px var(--shadow);
+            position: relative;
+        }
+
+        .code-block::before {
+            content: "Python";
+            position: absolute;
+            top: 12px;
+            right: 18px;
+            font-size: 0.8rem;
+            color: var(--primary);
+            opacity: 0.7;
+        }
+
+        .code-line {
+            margin: 6px 0;
+        }
+
+        .keyword { color: #f97316; }
+        .function { color: #10b981; }
+        .string { color: #fbbf24; }
+        .comment { color: #64748b; font-style: italic; }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding: 30px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, var(--primary), var(--secondary));
+            transform: translateX(-50%);
+        }
+
+        .timeline-item {
+            position: relative;
+            padding: 15px;
+            width: calc(50% - 30px);
+            margin-bottom: 25px;
+        }
+
+        .timeline-item:nth-child(odd) {
+            margin-left: auto;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: var(--primary);
+            border: 3px solid var(--white);
+            border-radius: 50%;
+            top: 20px;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        .timeline-item:nth-child(odd) .timeline-dot {
+            left: -8px;
+        }
+
+        .timeline-item:nth-child(even) .timeline-dot {
+            right: -8px;
+        }
+
+        .timeline-content {
+            background: var(--white);
+            padding: 18px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px var(--shadow);
+        }
+
+        .timeline-content h4 {
+            font-size: 1.1rem;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .timeline-content p {
+            font-size: 0.95rem;
+            color: var(--gray);
+            margin: 0;
+        }
+
+        /* Conclusion */
+        .conclusion-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            margin: 40px 0;
+        }
+
+        .conclusion-card {
+            background: var(--white);
+            padding: 35px;
+            border-radius: 20px;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .conclusion-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: -1;
+        }
+
+        .conclusion-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-10px);
+            box-shadow: 0 20px 50px var(--shadow);
+            color: var(--white);
+        }
+
+        .conclusion-card:hover::before {
+            opacity: 1;
+        }
+
+        .conclusion-card h4 {
+            font-size: 1.4rem;
+            margin-bottom: 12px;
+            transition: color 0.3s ease;
+        }
+
+        .conclusion-card:hover h4,
+        .conclusion-card:hover p {
+            color: var(--white);
+        }
+
+        /* Final Slide */
+        .final-metrics {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 40px;
+        }
+
+        .final-metric {
+            text-align: center;
+            background: var(--white);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .final-metric:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px var(--shadow);
+        }
+
+        .final-metric-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .final-metric-label {
+            font-size: 1rem;
+            color: var(--gray);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .content-slide {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .feature-grid,
+            .conclusion-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .slide {
+                padding: 40px 30px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-title {
+                font-size: 2.5rem;
+            }
+            
+            h2 {
+                font-size: 2.2rem;
+            }
+            
+            .navigation {
+                padding: 0 20px;
+            }
+            
+            .timeline-item {
+                width: calc(100% - 40px);
+                margin-left: 30px !important;
+            }
+            
+            .timeline::before {
+                left: 20px;
+            }
+            
+            .timeline-dot {
+                left: 11px !important;
+                right: auto !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Pattern -->
+    <div class="bg-pattern"></div>
+
+    <div class="presentation-container">
+        <!-- Logo -->
+        <div class="logo-badge">
+            <img src="https://cdn.tuwaiq.edu.sa/landing/images/logo/logo-h.png" 
+                 alt="Tuwaiq Academy" 
+                 class="logo-img"
+                 onerror="this.style.display='none';">
+        </div>
+
+        <!-- Slide 1: Title -->
+        <div class="slide active title-slide">
+            <div class="floating-shapes">
+                <div class="shape"></div>
+                <div class="shape"></div>
+                <div class="shape"></div>
+            </div>
+            <h1 class="main-title">Math Score Prediction</h1>
+            <p class="subtitle">Machine Learning with Linear Regression</p>
+            <div class="badge">Group 1 • AI Course 2025</div>
+        </div>
+
+        <!-- Slide 2: The Challenge -->
+        <div class="slide">
+            <div class="content-slide">
+                <div>
+                    <h2 style="font-size: 2.5rem;">The Challenge</h2>
+                    <h3 style="font-size: 1.5rem;">Can we predict student success?</h3>
+                    <p style="font-size: 1.1rem;">Educational institutions need data-driven insights to support student achievement.</p>
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <div class="feature-icon">🎯</div>
+                            <div class="feature-title">Predict</div>
+                            <div class="feature-desc">Math scores from data</div>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">📊</div>
+                            <div class="feature-title">Identify</div>
+                            <div class="feature-desc">Success factors</div>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🚀</div>
+                            <div class="feature-title">Enable</div>
+                            <div class="feature-desc">Early intervention</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 style="font-size: 1.5rem;">Why This Matters</h3>
+                    <div class="key-points">
+                        <div class="key-point" style="padding: 18px 25px; margin: 15px 0;">
+                            <strong>Resource Allocation:</strong> Better distribute educational resources
+                        </div>
+                        <div class="key-point" style="padding: 18px 25px; margin: 15px 0;">
+                            <strong>Personalized Learning:</strong> Tailor approaches to students
+                        </div>
+                        <div class="key-point" style="padding: 18px 25px; margin: 15px 0;">
+                            <strong>Academic Success:</strong> Improve overall outcomes
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Dataset -->
+        <div class="slide">
+            <div class="content-slide single">
+                <div style="width: 100%;">
+                    <h2 style="font-size: 2.5rem; margin-bottom: 30px;">Our Dataset</h2>
+                    <div class="chart-container" style="padding: 30px;">
+                        <h3 style="text-align: center; font-size: 1.4rem; margin-bottom: 20px;">Clean Data, Clear Insights</h3>
+                        <div class="bar-chart" style="height: 250px;">
+                            <div class="bar" style="height: 80%;">
+                                <span class="bar-value">1,000</span>
+                                <span class="bar-label">Students</span>
+                            </div>
+                            <div class="bar" style="height: 60%;">
+                                <span class="bar-value">8</span>
+                                <span class="bar-label">Features</span>
+                            </div>
+                            <div class="bar" style="height: 90%;">
+                                <span class="bar-value">100%</span>
+                                <span class="bar-label">Complete</span>
+                            </div>
+                            <div class="bar" style="height: 70%;">
+                                <span class="bar-value">3</span>
+                                <span class="bar-label">Key Scores</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="feature-grid" style="margin-top: 30px; gap: 20px;">
+                        <div class="feature-card" style="padding: 20px;">
+                            <div class="feature-icon" style="font-size: 2rem;">📚</div>
+                            <div class="feature-title" style="font-size: 1.1rem;">Academic Scores</div>
+                            <div class="feature-desc" style="font-size: 0.9rem;">Reading, Writing, Math</div>
+                        </div>
+                        <div class="feature-card" style="padding: 20px;">
+                            <div class="feature-icon" style="font-size: 2rem;">👥</div>
+                            <div class="feature-title" style="font-size: 1.1rem;">Demographics</div>
+                            <div class="feature-desc" style="font-size: 0.9rem;">Gender, Race/Ethnicity</div>
+                        </div>
+                        <div class="feature-card" style="padding: 20px;">
+                            <div class="feature-icon" style="font-size: 2rem;">🎓</div>
+                            <div class="feature-title" style="font-size: 1.1rem;">Parent Education</div>
+                            <div class="feature-desc" style="font-size: 0.9rem;">6 education levels</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Key Discovery -->
+        <div class="slide">
+            <div class="content-slide single">
+                <div style="width: 100%;">
+                    <h2 style="font-size: 2.5rem;">🔍 Key Discovery</h2>
+                    <p style="font-size: 1.6rem; color: var(--primary); margin: 30px 0;">
+                        Academic skills are deeply interconnected!
+                    </p>
+                    <div class="metrics-grid" style="gap: 25px; margin: 35px 0;">
+                        <div class="metric-card" style="padding: 30px 15px;">
+                            <div class="metric-value" style="font-size: 3rem;">82%</div>
+                            <div class="metric-label" style="font-size: 1rem;">Math ↔ Reading</div>
+                        </div>
+                        <div class="metric-card" style="background: linear-gradient(135deg, var(--accent), var(--secondary)); padding: 30px 15px;">
+                            <div class="metric-value" style="font-size: 3rem;">80%</div>
+                            <div class="metric-label" style="font-size: 1rem;">Math ↔ Writing</div>
+                        </div>
+                        <div class="metric-card" style="background: linear-gradient(135deg, var(--success), var(--primary)); padding: 30px 15px;">
+                            <div class="metric-value" style="font-size: 3rem;">95%</div>
+                            <div class="metric-label" style="font-size: 1rem;">Reading ↔ Writing</div>
+                        </div>
+                        <div class="metric-card" style="background: linear-gradient(135deg, var(--warning), var(--danger)); padding: 30px 15px;">
+                            <div class="metric-value" style="font-size: 3rem;">+5.8</div>
+                            <div class="metric-label" style="font-size: 1rem;">Test Prep Boost</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: The Model -->
+        <div class="slide">
+            <div class="content-slide">
+                <div>
+                    <h2 style="font-size: 2.5rem;">The Model</h2>
+                    <h3 style="font-size: 1.5rem;">Linear Regression</h3>
+                    <p style="font-size: 1.1rem;">Simple. Powerful. Interpretable.</p>
+                    <div class="code-block">
+                        <div class="code-line"><span class="keyword">from</span> sklearn.linear_model <span class="keyword">import</span> LinearRegression</div>
+                        <div class="code-line"></div>
+                        <div class="code-line"><span class="comment"># Train the model</span></div>
+                        <div class="code-line">model = <span class="function">LinearRegression</span>()</div>
+                        <div class="code-line">model.<span class="function">fit</span>(X_train, y_train)</div>
+                        <div class="code-line"></div>
+                        <div class="code-line"><span class="comment"># Make predictions</span></div>
+                        <div class="code-line">predictions = model.<span class="function">predict</span>(X_test)</div>
+                        <div class="code-line">accuracy = model.<span class="function">score</span>(X_test, y_test)</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 style="font-size: 1.5rem;">Why Linear Regression?</h3>
+                    <div class="timeline" style="padding: 30px 0;">
+                        <div class="timeline-item" style="padding: 15px; margin-bottom: 20px;">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-content" style="padding: 15px;">
+                                <h4 style="font-size: 1.1rem; margin-bottom: 5px;">Interpretability</h4>
+                                <p style="font-size: 0.95rem; margin: 0;">Clear feature impact</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item" style="padding: 15px; margin-bottom: 20px;">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-content" style="padding: 15px;">
+                                <h4 style="font-size: 1.1rem; margin-bottom: 5px;">Transparency</h4>
+                                <p style="font-size: 0.95rem; margin: 0;">No black box</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item" style="padding: 15px; margin-bottom: 20px;">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-content" style="padding: 15px;">
+                                <h4 style="font-size: 1.1rem; margin-bottom: 5px;">Performance</h4>
+                                <p style="font-size: 0.95rem; margin: 0;">Fast & efficient</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item" style="padding: 15px; margin-bottom: 20px;">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-content" style="padding: 15px;">
+                                <h4 style="font-size: 1.1rem; margin-bottom: 5px;">Reliability</h4>
+                                <p style="font-size: 0.95rem; margin: 0;">Proven baseline</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Results -->
+        <div class="slide">
+            <div class="content-slide single">
+                <div style="width: 100%;">
+                    <h2 style="font-size: 2.5rem;">🎯 Outstanding Results</h2>
+                    <div class="metrics-grid" style="gap: 25px; margin: 35px 0;">
+                        <div class="metric-card" style="background: linear-gradient(135deg, var(--success), var(--primary)); padding: 30px 15px;">
+                            <div class="metric-value" style="font-size: 3rem;">87.6%</div>
+                            <div class="metric-label" style="font-size: 1rem;">Model Accuracy (R²)</div>
+                        </div>
+                        <div class="metric-card" style="background: linear-gradient(135deg, var(--accent), var(--secondary)); padding: 30px 15px;">
+                            <div class="metric-value" style="font-size: 3rem;">±4.21</div>
+                            <div class="metric-label" style="font-size: 1rem;">Average Error</div>
+                        </div>
+                        <div class="metric-card" style="background: linear-gradient(135deg, var(--warning), var(--danger)); padding: 30px 15px;">
+                            <div class="metric-value" style="font-size: 3rem;">92.4%</div>
+                            <div class="metric-label" style="font-size: 1rem;">Within ±5 points</div>
+                        </div>
+                        <div class="metric-card" style="background: linear-gradient(135deg, var(--primary), var(--success)); padding: 30px 15px;">
+                            <div class="metric-value" style="font-size: 3rem;">98.7%</div>
+                            <div class="metric-label" style="font-size: 1rem;">Within ±10 points</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Feature Importance -->
+        <div class="slide">
+            <div class="content-slide">
+                <div class="chart-container" style="padding: 30px;">
+                    <h3 style="text-align: center; font-size: 1.4rem; margin-bottom: 20px;">Feature Impact on Math Scores</h3>
+                    <div class="bar-chart" style="height: 250px;">
+                        <div class="bar" style="height: 95%; background: linear-gradient(to top, var(--success), var(--accent));">
+                            <span class="bar-value">0.782</span>
+                            <span class="bar-label">Reading</span>
+                        </div>
+                        <div class="bar" style="height: 80%; background: linear-gradient(to top, var(--accent), var(--secondary));">
+                            <span class="bar-value">0.654</span>
+                            <span class="bar-label">Writing</span>
+                        </div>
+                        <div class="bar" style="height: 40%; background: linear-gradient(to top, var(--warning), var(--danger));">
+                            <span class="bar-value">+3.2</span>
+                            <span class="bar-label">Test Prep</span>
+                        </div>
+                        <div class="bar" style="height: 35%; background: linear-gradient(to top, var(--danger), var(--primary));">
+                            <span class="bar-value">+2.8</span>
+                            <span class="bar-label">Parent Ed</span>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h2 style="font-size: 2.5rem;">What Matters Most?</h2>
+                    <div class="key-points">
+                        <div class="key-point" style="padding: 18px 25px; margin: 15px 0;">
+                            <strong>Reading is King:</strong> Strongest predictor
+                        </div>
+                        <div class="key-point" style="padding: 18px 25px; margin: 15px 0;">
+                            <strong>Writing Matters:</strong> Second most important
+                        </div>
+                        <div class="key-point" style="padding: 18px 25px; margin: 15px 0;">
+                            <strong>Test Prep Helps:</strong> But less than expected
+                        </div>
+                        <div class="key-point" style="padding: 18px 25px; margin: 15px 0;">
+                            <strong>Background:</strong> Modest impact
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Applications -->
+        <div class="slide">
+            <div class="content-slide single">
+                <div>
+                    <h2 style="font-size: 2.5rem;">Real-World Applications</h2>
+                    <div class="conclusion-grid">
+                        <div class="conclusion-card">
+                            <h4>🎓 For Educators</h4>
+                            <p>Focus on comprehensive literacy - it drives all academic success</p>
+                        </div>
+                        <div class="conclusion-card">
+                            <h4>📚 For Students</h4>
+                            <p>Improving reading and writing will boost your math performance</p>
+                        </div>
+                        <div class="conclusion-card">
+                            <h4>🏫 For Schools</h4>
+                            <p>Data-driven insights for resource allocation and intervention</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Challenges & Future Work -->
+        <div class="slide">
+            <div class="content-slide" style="gap: 40px; max-width: 1600px;">
+                <div style="flex: 1;">
+                    <h2 style="font-size: 2rem; margin-bottom: 15px;">Challenges & Solutions</h2>
+                    <div style="display: grid; gap: 15px;">
+                        <div style="background: var(--white); padding: 15px; border-radius: 10px; box-shadow: 0 3px 10px var(--shadow); border-left: 4px solid var(--primary);">
+                            <h4 style="font-size: 1rem; margin-bottom: 5px; color: var(--primary);">Categorical Variables</h4>
+                            <p style="font-size: 0.9rem; margin: 0; color: var(--gray);">✓ One-hot encoding</p>
+                        </div>
+                        <div style="background: var(--white); padding: 15px; border-radius: 10px; box-shadow: 0 3px 10px var(--shadow); border-left: 4px solid var(--primary);">
+                            <h4 style="font-size: 1rem; margin-bottom: 5px; color: var(--primary);">Feature Selection</h4>
+                            <p style="font-size: 0.9rem; margin: 0; color: var(--gray);">✓ Correlation analysis</p>
+                        </div>
+                        <div style="background: var(--white); padding: 15px; border-radius: 10px; box-shadow: 0 3px 10px var(--shadow); border-left: 4px solid var(--primary);">
+                            <h4 style="font-size: 1rem; margin-bottom: 5px; color: var(--primary);">Multicollinearity</h4>
+                            <p style="font-size: 0.9rem; margin: 0; color: var(--gray);">✓ Linear regression handles it</p>
+                        </div>
+                        <div style="background: var(--white); padding: 15px; border-radius: 10px; box-shadow: 0 3px 10px var(--shadow); border-left: 4px solid var(--primary);">
+                            <h4 style="font-size: 1rem; margin-bottom: 5px; color: var(--primary);">Interpretability</h4>
+                            <p style="font-size: 0.9rem; margin: 0; color: var(--gray);">✓ Coefficient analysis</p>
+                        </div>
+                    </div>
+                    <div class="key-point" style="margin-top: 15px; padding: 12px; font-size: 0.9rem;">
+                        <strong>🎯 Key:</strong> Academic skills are interconnected!
+                    </div>
+                </div>
+                <div style="flex: 1;">
+                    <h2 style="font-size: 2rem; margin-bottom: 15px;">Future Work</h2>
+                    <div class="feature-grid" style="grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                        <div class="feature-card" style="padding: 15px;">
+                            <div class="feature-icon" style="font-size: 2rem; margin-bottom: 8px;">🔧</div>
+                            <div class="feature-title" style="font-size: 1rem; margin-bottom: 5px;">Advanced Models</div>
+                            <div class="feature-desc" style="font-size: 0.85rem;">Ridge/Lasso, XGBoost</div>
+                        </div>
+                        <div class="feature-card" style="padding: 15px;">
+                            <div class="feature-icon" style="font-size: 2rem; margin-bottom: 8px;">⚡</div>
+                            <div class="feature-title" style="font-size: 1rem; margin-bottom: 5px;">Feature Engineering</div>
+                            <div class="feature-desc" style="font-size: 0.85rem;">Interaction features</div>
+                        </div>
+                        <div class="feature-card" style="padding: 15px;">
+                            <div class="feature-icon" style="font-size: 2rem; margin-bottom: 8px;">🎯</div>
+                            <div class="feature-title" style="font-size: 1rem; margin-bottom: 5px;">Cross-Validation</div>
+                            <div class="feature-desc" style="font-size: 0.85rem;">K-fold evaluation</div>
+                        </div>
+                        <div class="feature-card" style="padding: 15px;">
+                            <div class="feature-icon" style="font-size: 2rem; margin-bottom: 8px;">🚀</div>
+                            <div class="feature-title" style="font-size: 1rem; margin-bottom: 5px;">Deployment</div>
+                            <div class="feature-desc" style="font-size: 0.85rem;">Web app predictions</div>
+                        </div>
+                        <div class="feature-card" style="padding: 15px;">
+                            <div class="feature-icon" style="font-size: 2rem; margin-bottom: 8px;">📊</div>
+                            <div class="feature-title" style="font-size: 1rem; margin-bottom: 5px;">Ensemble Methods</div>
+                            <div class="feature-desc" style="font-size: 0.85rem;">Combine multiple models</div>
+                        </div>
+                        <div class="feature-card" style="padding: 15px;">
+                            <div class="feature-icon" style="font-size: 2rem; margin-bottom: 8px;">🧪</div>
+                            <div class="feature-title" style="font-size: 1rem; margin-bottom: 5px;">A/B Testing</div>
+                            <div class="feature-desc" style="font-size: 0.85rem;">Real-world validation</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Thank You -->
+        <div class="slide title-slide">
+            <h1 class="main-title" style="font-size: 4rem;">Thank You!</h1>
+            <p class="subtitle">Questions?</p>
+            <div class="final-metrics">
+                <div class="final-metric">
+                    <span class="final-metric-value">✓</span>
+                    <span class="final-metric-label">Mission Complete</span>
+                </div>
+                <div class="final-metric">
+                    <span class="final-metric-value">87.6%</span>
+                    <span class="final-metric-label">Model Accuracy</span>
+                </div>
+                <div class="final-metric">
+                    <span class="final-metric-value">🚀</span>
+                    <span class="final-metric-label">Ready to Deploy</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="navigation">
+            <button class="nav-btn" onclick="previousSlide()">
+                <span>←</span> Previous
+            </button>
+            
+            <div class="slide-counter">
+                <span class="slide-number">
+                    <span id="current">1</span> / <span id="total">10</span>
+                </span>
+                <div class="slide-dots" id="dots"></div>
+            </div>
+            
+            <button class="nav-btn" onclick="nextSlide()">
+                Next <span>→</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        // Initialize
+        document.getElementById('total').textContent = totalSlides;
+        createDots();
+        updateSlide();
+
+        function createDots() {
+            const dotsContainer = document.getElementById('dots');
+            for (let i = 0; i < totalSlides; i++) {
+                const dot = document.createElement('button');
+                dot.className = 'dot';
+                dot.onclick = () => goToSlide(i);
+                dotsContainer.appendChild(dot);
+            }
+        }
+
+        function updateSlide() {
+            // Hide all slides
+            slides.forEach(slide => slide.classList.remove('active'));
+            
+            // Show current slide
+            slides[currentSlide].classList.add('active');
+            
+            // Update counter
+            document.getElementById('current').textContent = currentSlide + 1;
+            
+            // Update dots
+            const dots = document.querySelectorAll('.dot');
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentSlide);
+            });
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides - 1) {
+                currentSlide++;
+                updateSlide();
+            }
+        }
+
+        function previousSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlide();
+            }
+        }
+
+        function goToSlide(index) {
+            if (index >= 0 && index < totalSlides) {
+                currentSlide = index;
+                updateSlide();
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                previousSlide();
+            } else if (e.key === 'Home') {
+                e.preventDefault();
+                goToSlide(0);
+            } else if (e.key === 'End') {
+                e.preventDefault();
+                goToSlide(totalSlides - 1);
+            } else if (e.key >= '1' && e.key <= '9') {
+                const slideNum = parseInt(e.key) - 1;
+                if (slideNum < totalSlides) {
+                    goToSlide(slideNum);
+                }
+            } else if (e.key === '0') {
+                goToSlide(9); // Go to slide 10
+            }
+        });
+
+        // Touch/swipe support for mobile
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            if (touchEndX < touchStartX - 50) {
+                nextSlide();
+            }
+            if (touchEndX > touchStartX + 50) {
+                previousSlide();
+            }
+        }
+    </script>
+</body>
+</html>
