@@ -107,4 +107,4 @@ Want to improve it? Feel free to:
 ---
 
 **Made with ❤️ and Python** | **Powered by Machine Learning**
-https://covu0.github.io/AI-Predict-math-score/
+
