@@ -1,4 +1,4 @@
-# 🤖 AI Predict Math Score
+# 🤖 Smart Math Prediction
 
 > **Machine Learning Project - Predicting Student Math Scores**  
 > Using Linear Regression with 87.6% accuracy
