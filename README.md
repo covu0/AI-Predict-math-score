@@ -82,9 +82,9 @@ jupyter notebook Student_Math_Score_linear_Regression_Project.ipynb
 
 ## 📁 Project Files
 
-- `Student_Math_Score_linear_Regression_Project.ipynb` - Main analysis
-- `AI-project.html` - Interactive presentation  
-- `README.md` - This file
+- [`Student_Math_Score_linear_Regression_Project.ipynb`](./Student_Math_Score_linear_Regression_Project.ipynb) – Main Jupyter Notebook  
+- [`AI-project.html`](https://covu0.github.io/AI-Predict-math-score/) – Interactive presentation  
+- `README.md` – This file
 
 ## 🎓 Educational Value
 
